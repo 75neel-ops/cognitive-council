@@ -78,6 +78,7 @@ with st.sidebar:
 
 st.subheader("Ask the Council")
 question = st.text_area("Your question", placeholder="What would you like the four AI members to examine?", height=125)
+research_query = st.text_input("Research topic / keywords", placeholder="e.g. adolescent anxiety, gut microbiome and depression, AI alignment")
 research_enabled = st.checkbox("Search recent research papers and news before analysis", value=True,
     help="Retrieves discovery records from OpenAlex, Crossref, arXiv and GDELT News. News is context, not scientific evidence.")
 years_back = st.selectbox("Publication window", [1, 3, 5, 10], index=1, disabled=not research_enabled,
@@ -93,7 +94,7 @@ if run:
             research_context = ""
             if research_enabled:
                 progress.progress(0.05, text="Searching scholarly indexes and recent news...")
-                research_data = search_research(question.strip(), years_back=years_back, per_source=5)
+                research_data = search_research((research_query.strip() or question.strip()), years_back=years_back, per_source=5)
                 source_lines = []
                 for idx, item in enumerate(research_data["results"], 1):
                     item["ref"] = f"R{idx}"
