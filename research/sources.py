@@ -121,6 +121,47 @@ def search_arxiv(query: str, limit: int = 5) -> list[dict]:
     return out
 
 
+def search_pubmed(query: str, limit: int = 5) -> list[dict]:
+    """Search PubMed for biomedical literature; abstracts are fetched when available."""
+    params = urllib.parse.urlencode({
+        "db": "pubmed", "term": query, "retmax": limit,
+        "sort": "date", "retmode": "json",
+    })
+    search_data = _get_json("https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?" + params)
+    ids = search_data.get("esearchresult", {}).get("idlist", [])
+    if not ids:
+        return []
+    fetch_params = urllib.parse.urlencode({"db": "pubmed", "id": ",".join(ids), "retmode": "xml"})
+    root = ET.fromstring(_get_text("https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?" + fetch_params))
+    out = []
+    for article in root.findall(".//PubmedArticle"):
+        pmid = article.findtext(".//PMID", default="")
+        title_node = article.find(".//ArticleTitle")
+        title = "".join(title_node.itertext()) if title_node is not None else "Untitled"
+        abstract = " ".join("".join(node.itertext()) for node in article.findall(".//Abstract/AbstractText"))
+        author_names = []
+        for author in article.findall(".//Author")[:4]:
+            name = " ".join(filter(None, [author.findtext("ForeName"), author.findtext("LastName")]))
+            if name:
+                author_names.append(name)
+        journal = article.findtext(".//Journal/Title", default="PubMed indexed journal")
+        year = article.findtext(".//PubDate/Year", default="")
+        doi = ""
+        for article_id in article.findall(".//ArticleId"):
+            if article_id.attrib.get("IdType") == "doi":
+                doi = article_id.text or ""
+                break
+        out.append({
+            "source": "PubMed", "title": _clean(title, 350),
+            "authors": ", ".join(author_names) or "Authors not listed",
+            "date": year, "venue": journal, "citations": None, "doi": doi,
+            "url": f"https://pubmed.ncbi.nlm.nih.gov/{pmid}/" if pmid else "",
+            "open_access_url": "", "abstract": _clean(abstract, 1000),
+            "retracted": False, "kind": "biomedical journal record",
+        })
+    return out
+
+
 def search_news(query: str, limit: int = 6) -> list[dict]:
     params = urllib.parse.urlencode({
         "query": f'"{query}"', "mode": "ArtList", "format": "json",
@@ -147,6 +188,7 @@ def search_research(query: str, years_back: int = 3, per_source: int = 5) -> dic
         ("OpenAlex", lambda: search_openalex(query, from_date, per_source)),
         ("Crossref", lambda: search_crossref(query, from_date, per_source)),
         ("arXiv", lambda: search_arxiv(query, per_source)),
+        ("PubMed", lambda: search_pubmed(query, per_source)),
         ("GDELT News", lambda: search_news(query, per_source)),
     ]
     results, errors = [], []
