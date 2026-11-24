@@ -78,7 +78,7 @@ def search_crossref(query: str, from_date: str, limit: int = 5) -> list[dict]:
         "sort": "published", "order": "desc", "rows": limit,
         "select": "DOI,title,author,published,published-print,published-online,container-title,URL,type,abstract"
     })
-    data = _get_json("https://api.crossref.org/works?" + params + "&mailto=cognitive.council@example.org")
+    data = _get_json("https://api.crossref.org/works?" + params)
     out = []
     for item in data.get("message", {}).get("items", []):
         date_parts = (item.get("published") or item.get("published-online") or item.get("published-print") or {}).get("date-parts", [[]])[0]
