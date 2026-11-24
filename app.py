@@ -84,6 +84,13 @@ research_enabled = st.checkbox("Search recent research papers and news before an
 years_back = st.selectbox("Publication window", [1, 3, 5, 10], index=1, disabled=not research_enabled,
     help="Scholarly search window. News search focuses on the latest 30 days.")
 
+if "research_question_for_plan" not in st.session_state:
+    st.session_state["research_question_for_plan"] = ""
+if question.strip() != st.session_state["research_question_for_plan"]:
+    st.session_state["research_queries_text"] = ""
+    st.session_state["research_query_plan"] = None
+    st.session_state["research_question_for_plan"] = question.strip()
+
 if "research_queries_text" not in st.session_state:
     st.session_state["research_queries_text"] = ""
 if "research_query_plan" not in st.session_state:
