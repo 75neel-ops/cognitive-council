@@ -26,7 +26,11 @@ def run_council(question: str, mode: str, agents: list[dict], chief: dict, progr
 
     successful = [a for a in agents if answers.get(a["id"], {}).get("answer")]
     if not successful:
-        raise RuntimeError("None of the four agents returned an answer. Check provider keys, model names, and API access.")
+        details = "\\n".join(
+            f"- {a['name']} ({a['provider']} / {a['model']}): {answers.get(a['id'], {}).get('error', 'No response')}"
+            for a in agents
+        )
+        raise RuntimeError("None of the four agents returned an answer. Individual errors:\\n" + details)
 
     critiques = {}
     revised = {}
