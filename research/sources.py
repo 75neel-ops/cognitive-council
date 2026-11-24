@@ -212,7 +212,7 @@ def search_research_many(queries: list[str], years_back: int = 3, per_source: in
     """Run an approved set of search queries and merge duplicate discovery records."""
     cleaned = []
     for query in queries:
-        value = re.sub(r"\\s+", " ", str(query)).strip()
+        value = re.sub(r"\s+", " ", str(query)).strip()
         if value and value.lower() not in {q.lower() for q in cleaned}:
             cleaned.append(value)
     if not cleaned:
