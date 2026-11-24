@@ -6,13 +6,13 @@ from providers.base import get_provider
 def _ask(provider_name: str, model: str, system: str, prompt: str) -> str:
     return get_provider(provider_name).generate(model, system, prompt)
 
-def run_council(question: str, mode: str, agents: list[dict], chief: dict, progress=None) -> dict:
+def run_council(question: str, mode: str, agents: list[dict], chief: dict, progress=None, research_context: str = "") -> dict:
     answers = {}
     with ThreadPoolExecutor(max_workers=4) as pool:
         futures = {
             pool.submit(_ask, a["provider"], a["model"],
                         f"You are {a['role']}. {a['instructions']} Answer independently. State assumptions and uncertainty. Do not invent sources.",
-                        question): a
+                        (f"Research evidence pack (treat as leads; verify claims and do not overstate):\\n{research_context}\\n\\nQuestion: {question}" if research_context else question)): a
             for a in agents
         }
         for future in as_completed(futures):
@@ -63,6 +63,6 @@ def run_council(question: str, mode: str, agents: list[dict], chief: dict, progr
             material.append(f"### {item['name']}\nAgent error: {item['error']}")
 
     chief_system = """You are the Chief Intelligence Officer of Cognitive Council. Synthesize the panel; do not merely average opinions. Separate well-supported points from speculation. Explicitly identify agreement, meaningful disagreement, limitations, and what would change the conclusion. Never claim that a fact was independently verified unless evidence was actually supplied."""
-    chief_prompt = f"""MODE: {mode}\nUSER QUESTION: {question}\n\nPANEL OUTPUTS:\n{chr(10).join(material)}\n\nProduce a clear report with: Executive conclusion; strongest shared findings; disagreements and competing explanations; evidence quality and uncertainty; practical conclusion / next steps. If the panel lacks sources, say so."""
+    chief_prompt = f"""MODE: {mode}\nUSER QUESTION: {question}\n\nPANEL OUTPUTS:\n{chr(10).join(material)}\n\nProduce a research-grade report with: Executive summary; key findings; competing arguments and disagreements; evidence quality and limitations; research gaps; practical implications; next steps. Cite retrieved items by their [R#] identifiers when relevant. Clearly distinguish peer-reviewed publications, preprints, metadata-only records, and news reports. Do not treat news as scientific evidence. Do not invent citations, DOIs, quotations, or findings. If the evidence pack is thin, say so."""
     final = _ask(chief["provider"], chief["model"], chief_system, chief_prompt)
-    return {"question": question, "mode": mode, "answers": answers, "critiques": critiques, "final": final}
+    return {"question": question, "mode": mode, "answers": answers, "critiques": critiques, "final": final, "research_context": research_context}
