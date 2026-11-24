@@ -1,11 +1,31 @@
 """Cognitive Council — four AI agents and a Chief AI."""
+import base64
 import streamlit as st
 from config import AGENTS, PROVIDERS, DEFAULT_MODELS, get_model_settings, get_secret
 from services.council_engine import run_council
 from research.sources import search_research_many
 from services.query_builder import build_research_queries
 
-st.set_page_config(page_title="Cognitive Council", page_icon="🧠", layout="wide")
+# Original Cognitive Council mark: four connected minds around one shared centre.
+BRAND_ICON = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+<defs>
+  <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#14213d"/><stop offset="1" stop-color="#2457a6"/></linearGradient>
+  <linearGradient id="core" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#72e0d1"/><stop offset="1" stop-color="#ffffff"/></linearGradient>
+</defs>
+<rect x="8" y="8" width="240" height="240" rx="58" fill="url(#bg)"/>
+<g stroke="#b8d8ff" stroke-width="9" stroke-linecap="round" opacity=".95" fill="none">
+  <path d="M128 128 L65 66 M128 128 L191 66 M128 128 L65 190 M128 128 L191 190"/>
+</g>
+<g fill="#72e0d1" stroke="#ffffff" stroke-width="5">
+  <circle cx="61" cy="61" r="20"/><circle cx="195" cy="61" r="20"/>
+  <circle cx="61" cy="195" r="20"/><circle cx="195" cy="195" r="20"/>
+</g>
+<circle cx="128" cy="128" r="43" fill="url(#core)" stroke="#ffffff" stroke-width="7"/>
+<path d="M128 98c-18-16-42-2-42 18 0 9 5 15 12 20-7 5-12 12-12 21 0 18 22 29 42 13 20 16 42 5 42-13 0-9-5-16-12-21 7-5 12-11 12-20 0-20-24-34-42-18z" fill="#2457a6"/>
+<path d="M128 104v72" stroke="#d9fff8" stroke-width="5" stroke-linecap="round"/>
+</svg>"""
+BRAND_ICON_DATA = base64.b64encode(BRAND_ICON.encode("utf-8")).decode("ascii")
+st.set_page_config(page_title="Cognitive Council | NilanjanC", page_icon=BRAND_ICON, layout="wide")
 
 # Public hosting is fine, but keep paid API access behind a shared password.
 try:
@@ -19,7 +39,7 @@ if not APP_PASSWORD:
 
 if not st.session_state.get("authenticated", False):
     st.title("🔐 Cognitive Council")
-    st.caption("This AI workspace is access-protected.")
+    st.caption("An independent research workspace created and owned by NilanjanC.")\n    st.caption("This AI workspace is access-protected.")
     with st.form("login_form"):
         entered = st.text_input("Access password", type="password")
         submitted = st.form_submit_button("Unlock Cognitive Council", type="primary")
@@ -38,14 +58,14 @@ st.markdown("""
 .stMarkdown, .stMarkdown p, .stMarkdown li, label, [data-testid="stCaptionContainer"] {color:#172033 !important;}
 .hero {padding:1.5rem 1.7rem; border:1px solid #d7dfeb; border-radius:18px; background:linear-gradient(120deg,#ffffff,#eaf1fb); margin-bottom:1.2rem; box-shadow:0 3px 14px rgba(25,45,75,.06);}
 .hero h1 {font-size:2.4rem; margin:0; color:#14213d !important;}
-.hero p {color:#42526b !important; margin:.5rem 0 0;}
+.hero p {color:#42526b !important; margin:.5rem 0 0;}\n.owner-line {font-size:.88rem; color:#52627a !important; margin:.9rem 0 0 !important;}
 .agent-card {background:#fff; border:1px solid #d8e0eb; border-radius:13px; padding:14px 12px; min-height:105px; box-shadow:0 2px 8px rgba(25,45,75,.04);}
 .agent-card strong {color:#172033; display:block; margin-bottom:5px;}
 .agent-card span {color:#52627a; font-size:.88rem;}
 .small-muted {color:#52627a !important; font-size:.9rem;}
 div.stButton > button[kind="primary"] {background:#2457a6; color:white; border:0;}
 </style>
-<div class="hero"><h1>🧠 COGNITIVE COUNCIL</h1><p>Four independent AI minds. One Chief. A clearer way to think.</p></div>
+<div class="hero"><div style="display:flex;align-items:center;gap:16px;"><img src="data:image/svg+xml;base64,{BRAND_ICON_DATA}" width="66" height="66" alt="Cognitive Council icon"><div><h1>COGNITIVE COUNCIL</h1><p>Four independent AI minds. One Chief. A clearer way to think.</p></div></div><p class="owner-line">Created and owned by <strong>NilanjanC</strong></p></div>
 """, unsafe_allow_html=True)
 
 st.markdown("### Meet your four AI members")
@@ -202,4 +222,4 @@ if run:
             st.error(f"Council session could not be completed: {exc}")
 
 st.divider()
-st.markdown('<p class="small-muted">Cognitive Council is an AI-assisted analysis tool. Model agreement is not proof of correctness; verify important claims independently.</p>', unsafe_allow_html=True)
+st.markdown('<p class="small-muted">Cognitive Council is an AI-assisted analysis tool. Model agreement is not proof of correctness; verify important claims independently.</p><p class="small-muted" style="text-align:center;margin-top:1.2rem;">© 2026 Cognitive Council · Created and owned by <strong>NilanjanC</strong></p>', unsafe_allow_html=True)
