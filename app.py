@@ -124,6 +124,8 @@ if run:
                         st.caption(meta + (f" · Citations indexed: {item['citations']}" if item.get("citations") is not None else ""))
                         if item.get("authors"):
                             st.caption("Authors / publisher: " + item["authors"])
+                        if item.get("open_access_url") and item.get("open_access_url") != item.get("url"):
+                            st.markdown(f"[Open-access copy]({item['open_access_url']})")
                         if item.get("retracted"):
                             st.error("Marked as retracted in OpenAlex — do not treat as current supporting evidence.")
                         if item.get("abstract"):
