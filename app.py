@@ -30,19 +30,28 @@ if not st.session_state.get("authenticated", False):
     st.stop()
 st.markdown("""
 <style>
-.stApp {background: #0b1020;}
-.block-container {max-width: 1180px; padding-top: 2rem;}
-.hero {padding: 1.5rem 1.7rem; border: 1px solid #263653; border-radius: 18px;
-background: linear-gradient(120deg,#172846,#111827); margin-bottom: 1.2rem;}
-.hero h1 {font-size: 2.4rem; margin: 0; color: #f8fafc;}
-.hero p {color: #b8c7dc; margin: .5rem 0 0;}
-.small-muted {color:#9aabc2; font-size:.9rem;}
+.stApp, [data-testid="stAppViewContainer"], [data-testid="stHeader"] {background:#f7f9fc !important; color:#172033 !important;}
+[data-testid="stSidebar"], [data-testid="stSidebar"] > div {background:#eef2f7 !important;}
+.block-container {max-width:1220px; padding-top:2rem; color:#172033 !important;}
+.stMarkdown, .stMarkdown p, .stMarkdown li, label, [data-testid="stCaptionContainer"] {color:#172033 !important;}
+.hero {padding:1.5rem 1.7rem; border:1px solid #d7dfeb; border-radius:18px; background:linear-gradient(120deg,#ffffff,#eaf1fb); margin-bottom:1.2rem; box-shadow:0 3px 14px rgba(25,45,75,.06);}
+.hero h1 {font-size:2.4rem; margin:0; color:#14213d !important;}
+.hero p {color:#42526b !important; margin:.5rem 0 0;}
+.agent-card {background:#fff; border:1px solid #d8e0eb; border-radius:13px; padding:14px 12px; min-height:105px; box-shadow:0 2px 8px rgba(25,45,75,.04);}
+.agent-card strong {color:#172033; display:block; margin-bottom:5px;}
+.agent-card span {color:#52627a; font-size:.88rem;}
+.small-muted {color:#52627a !important; font-size:.9rem;}
+div.stButton > button[kind="primary"] {background:#2457a6; color:white; border:0;}
 </style>
-<div class="hero">
-<h1>🧠 COGNITIVE COUNCIL</h1>
-<p>Four independent AI minds. One Chief. A clearer way to think.</p>
-</div>
+<div class="hero"><h1>🧠 COGNITIVE COUNCIL</h1><p>Four independent AI minds. One Chief. A clearer way to think.</p></div>
 """, unsafe_allow_html=True)
+
+st.markdown("### Meet your four AI members")
+cols = st.columns(4)
+for col, agent in zip(cols, AGENTS):
+    with col:
+        st.markdown(f'<div class="agent-card"><strong>{agent["name"]}</strong><span>{agent["role"]}</span></div>', unsafe_allow_html=True)
+st.caption("All four members work on every question. Configure each member's provider and model in the left-hand Model Control Centre.")
 
 with st.sidebar:
     st.header("Council settings")
