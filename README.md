@@ -1,5 +1,9 @@
 # Cognitive Council
 
+## Ownership
+
+Created and owned by **NilanjanC**. The app uses an original four-node Cognitive Council icon for its page favicon and branded header.
+
 A browser-based multi-agent AI research and debate workspace.
 
 ## Research workspace
