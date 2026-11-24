@@ -51,7 +51,7 @@ if not st.session_state.get("authenticated", False):
         else:
             st.error("Incorrect password. Please try again.")
     st.stop()
-st.markdown(f"""
+st.markdown("""
 <style>
 .stApp, [data-testid="stAppViewContainer"], [data-testid="stHeader"] {background:#f7f9fc !important; color:#172033 !important;}
 [data-testid="stSidebar"], [data-testid="stSidebar"] > div {background:#eef2f7 !important;}
