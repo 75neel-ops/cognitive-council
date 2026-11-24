@@ -7,7 +7,7 @@ PROVIDERS = ["gemini", "openai"]
 
 DEFAULT_MODELS = {
     "openai": ["gpt-4o-mini", "gpt-4o"],
-    "gemini": ["gemini-2.0-flash", "gemini-2.5-flash"],
+    "gemini": ["gemini-3.8-flash", "gemini-3.8-flash"],
     "anthropic": ["claude-3-5-haiku-latest", "claude-3-7-sonnet-latest"],
 }
 
@@ -28,9 +28,9 @@ def get_secret(name: str) -> str:
 def get_model_settings(agent_id: str, provider_default: str | None = None, model_default: str | None = None):
     # Sensible starting mix: two Gemini agents, two OpenAI agents; Chief uses OpenAI.
     defaults = {
-        "agent_1": ("gemini", "gemini-2.0-flash"),
+        "agent_1": ("gemini", "gemini-3.8-flash"),
         "agent_2": ("openai", "gpt-4o-mini"),
-        "agent_3": ("gemini", "gemini-2.0-flash"),
+        "agent_3": ("gemini", "gemini-3.8-flash"),
         "agent_4": ("openai", "gpt-4o-mini"),
         "chief": ("openai", "gpt-4o"),
     }
