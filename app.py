@@ -80,7 +80,7 @@ st.subheader("Ask the Council")
 question = st.text_area("Your question", placeholder="What would you like the four AI members to examine?", height=125)
 research_query = st.text_input("Research topic / keywords", placeholder="e.g. adolescent anxiety, gut microbiome and depression, AI alignment")
 research_enabled = st.checkbox("Search recent research papers and news before analysis", value=True,
-    help="Retrieves discovery records from OpenAlex, Crossref, arXiv and GDELT News. News is context, not scientific evidence.")
+    help="Retrieves discovery records from OpenAlex, Crossref, PubMed, arXiv and GDELT News. News is context, not scientific evidence.")
 years_back = st.selectbox("Publication window", [1, 3, 5, 10], index=1, disabled=not research_enabled,
     help="Scholarly search window. News search focuses on the latest 30 days.")
 st.caption("Tip: Ask a focused question. Advanced mode uses additional model calls and may cost more. Live source retrieval may be subject to public API rate limits.")
@@ -148,7 +148,7 @@ if run:
                         st.markdown("#### Peer review and revised position")
                         st.markdown(result["critiques"][agent["id"]])
             st.download_button("Download session as Markdown",
-                data=f"# Cognitive Council\n\nQuestion: {question}\nMode: {mode}\n\n## Chief AI\n\n{result['final']}\n\n## Agent responses\n\n" + "\n\n".join(f"### {v['name']}\n{v['answer']}" for v in result["answers"].values()),
+                data=f"# Cognitive Council\n\nQuestion: {question}\nMode: {mode}\n\n## Chief AI\n\n{result['final']}\n\n## Retrieved sources\n\n" + "\n".join(f"[{x.get('ref')}] {x.get('title')} — {x.get('source')} — {x.get('url')}" for x in research_data.get("results", [])) + "\n\n## Agent responses\n\n" + "\n\n".join(f"### {v['name']}\n{v['answer']}" for v in result["answers"].values()),
                 file_name="cognitive_council_session.md", mime="text/markdown")
         except Exception as exc:
             progress.empty()
