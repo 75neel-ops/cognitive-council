@@ -195,7 +195,7 @@ if run:
                         st.markdown("#### Peer review and revised position")
                         st.markdown(result["critiques"][agent["id"]])
             st.download_button("Download session as Markdown",
-                data=f"# Cognitive Council\n\nQuestion: {question}\nMode: {mode}\n\n## Chief AI\n\n{result['final']}\n\n## Retrieved sources\n\n" + "\n".join(f"[{x.get('ref')}] {x.get('title')} — {x.get('source')} — {x.get('url')}" for x in research_data.get("results", [])) + "\n\n## Agent responses\n\n" + "\n\n".join(f"### {v['name']}\n{v['answer']}" for v in result["answers"].values()),
+                data=f"# Cognitive Council\n\nQuestion: {question}\nMode: {mode}\n\n## Chief AI\n\n{result['final']}\n\n## Research search strategy\n\n" + "\n".join(f"- {q}" for q in research_data.get("queries", [])) + "\n\n## Retrieved sources\n\n" + "\n".join(f"[{x.get('ref')}] {x.get('title')} — {x.get('source')} — {x.get('url')}" for x in research_data.get("results", [])) + "\n\n## Agent responses\n\n" + "\n\n".join(f"### {v['name']}\n{v['answer']}" for v in result["answers"].values()),
                 file_name="cognitive_council_session.md", mime="text/markdown")
         except Exception as exc:
             progress.empty()
