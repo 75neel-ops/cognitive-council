@@ -45,7 +45,7 @@ with st.sidebar:
 st.subheader("Ask the Council")
 question = st.text_area("Your question", placeholder="What would you like the four AI members to examine?", height=125)
 st.caption("Tip: Ask a focused question. Advanced mode uses additional model calls and may cost more.")
-run = st.button("召 Convene the Council", type="primary", use_container_width=True, disabled=not question.strip())
+run = st.button("Convene the Council", type="primary", use_container_width=True, disabled=not question.strip())
 
 if run:
     with st.spinner("The four members are preparing their independent responses..."):
