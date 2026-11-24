@@ -3,7 +3,7 @@ from __future__ import annotations
 import os
 import streamlit as st
 
-PROVIDERS = ["openai", "gemini", "anthropic"]
+PROVIDERS = ["gemini", "openai"]
 
 DEFAULT_MODELS = {
     "openai": ["gpt-4o-mini", "gpt-4o"],
