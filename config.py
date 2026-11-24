@@ -25,7 +25,18 @@ def get_secret(name: str) -> str:
         value = ""
     return str(value or os.getenv(name, "")).strip()
 
-def get_model_settings(agent_id: str, provider_default: str = "openai", model_default: str = "gpt-4o-mini"):
+def get_model_settings(agent_id: str, provider_default: str | None = None, model_default: str | None = None):
+    # Sensible starting mix: two Gemini agents, two OpenAI agents; Chief uses OpenAI.
+    defaults = {
+        "agent_1": ("gemini", "gemini-2.0-flash"),
+        "agent_2": ("openai", "gpt-4o-mini"),
+        "agent_3": ("gemini", "gemini-2.0-flash"),
+        "agent_4": ("openai", "gpt-4o-mini"),
+        "chief": ("openai", "gpt-4o"),
+    }
+    default_provider, default_model = defaults.get(agent_id, ("openai", "gpt-4o-mini"))
+    provider_default = provider_default or default_provider
+    model_default = model_default or default_model
     try:
         section = st.secrets.get("models", {})
         provider = str(section.get(f"{agent_id}_provider", provider_default))
