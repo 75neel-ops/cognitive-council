@@ -4,6 +4,30 @@ from config import AGENTS, PROVIDERS, DEFAULT_MODELS, get_model_settings, get_se
 from services.council_engine import run_council
 
 st.set_page_config(page_title="Cognitive Council", page_icon="🧠", layout="wide")
+
+# Public hosting is fine, but keep paid API access behind a shared password.
+try:
+    APP_PASSWORD = str(st.secrets.get("APP_PASSWORD", "")).strip()
+except Exception:
+    APP_PASSWORD = ""
+
+if not APP_PASSWORD:
+    st.error("The app owner must configure APP_PASSWORD in Streamlit Secrets before the Council can be used.")
+    st.stop()
+
+if not st.session_state.get("authenticated", False):
+    st.title("🔐 Cognitive Council")
+    st.caption("This AI workspace is access-protected.")
+    with st.form("login_form"):
+        entered = st.text_input("Access password", type="password")
+        submitted = st.form_submit_button("Unlock Cognitive Council", type="primary")
+    if submitted:
+        if entered == APP_PASSWORD:
+            st.session_state["authenticated"] = True
+            st.rerun()
+        else:
+            st.error("Incorrect password. Please try again.")
+    st.stop()
 st.markdown("""
 <style>
 .stApp {background: #0b1020;}
