@@ -2,6 +2,7 @@
 import streamlit as st
 from config import AGENTS, PROVIDERS, DEFAULT_MODELS, get_model_settings, get_secret
 from services.council_engine import run_council
+from research.sources import search_research
 
 st.set_page_config(page_title="Cognitive Council", page_icon="🧠", layout="wide")
 
@@ -77,17 +78,58 @@ with st.sidebar:
 
 st.subheader("Ask the Council")
 question = st.text_area("Your question", placeholder="What would you like the four AI members to examine?", height=125)
-st.caption("Tip: Ask a focused question. Advanced mode uses additional model calls and may cost more.")
+research_enabled = st.checkbox("Search recent research papers and news before analysis", value=True,
+    help="Retrieves discovery records from OpenAlex, Crossref, arXiv and GDELT News. News is context, not scientific evidence.")
+years_back = st.selectbox("Publication window", [1, 3, 5, 10], index=1, disabled=not research_enabled,
+    help="Scholarly search window. News search focuses on the latest 30 days.")
+st.caption("Tip: Ask a focused question. Advanced mode uses additional model calls and may cost more. Live source retrieval may be subject to public API rate limits.")
 run = st.button("Convene the Council", type="primary", use_container_width=True, disabled=not question.strip())
 
 if run:
     with st.spinner("The four members are preparing their independent responses..."):
         progress = st.progress(0, text="Waiting for the panel...")
         try:
+            research_data = {"results": [], "errors": []}
+            research_context = ""
+            if research_enabled:
+                progress.progress(0.05, text="Searching scholarly indexes and recent news...")
+                research_data = search_research(question.strip(), years_back=years_back, per_source=5)
+                source_lines = []
+                for idx, item in enumerate(research_data["results"], 1):
+                    item["ref"] = f"R{idx}"
+                    source_lines.append(
+                        f"[R{idx}] {item.get('title')} | {item.get('source')} | {item.get('date')} | "
+                        f"{item.get('venue')} | URL: {item.get('url')} | Abstract/summary: {item.get('abstract')}"
+                    )
+                research_context = "\n".join(source_lines)
             result = run_council(question.strip(), mode, agent_settings, chief_settings,
-                                 progress=lambda done, total: progress.progress(done/total, text=f"Independent responses: {done}/{total}"))
+                                 progress=lambda done, total: progress.progress(0.1 + 0.75*done/total, text=f"Council responses: {done}/{total}"),
+                                 research_context=research_context)
             progress.empty()
             st.success("The Council has completed its session.")
+            if research_enabled:
+                st.markdown("## Live research desk")
+                st.caption(f"Search window: from {research_data.get('from_date', 'recent')}. Records are discovery leads; verify publication status and methods before citing.")
+                if research_data.get("errors"):
+                    with st.expander("Some sources could not be reached"):
+                        for err in research_data["errors"]:
+                            st.warning(err)
+                if research_data.get("results"):
+                    for item in research_data["results"]:
+                        label = f"[{item['ref']}] {item.get('title', 'Untitled')}"
+                        url = item.get("url") or ""
+                        st.markdown(f"**{label}**" + (f" — [{item.get('source')}]({url})" if url else f" — {item.get('source')}"))
+                        meta = " · ".join(str(x) for x in [item.get("date"), item.get("venue"), item.get("kind")] if x)
+                        st.caption(meta + (f" · Citations indexed: {item['citations']}" if item.get("citations") is not None else ""))
+                        if item.get("authors"):
+                            st.caption("Authors / publisher: " + item["authors"])
+                        if item.get("retracted"):
+                            st.error("Marked as retracted in OpenAlex — do not treat as current supporting evidence.")
+                        if item.get("abstract"):
+                            with st.expander(f"Abstract / summary — {item['ref']}"):
+                                st.write(item["abstract"])
+                else:
+                    st.warning("No source records were retrieved. The Council answer is based on model knowledge only; check source errors above.")
             st.markdown("## Chief AI — Final Synthesis")
             st.markdown(result["final"])
             st.divider()
