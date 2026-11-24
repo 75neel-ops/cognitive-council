@@ -39,7 +39,8 @@ if not APP_PASSWORD:
 
 if not st.session_state.get("authenticated", False):
     st.title("🔐 Cognitive Council")
-    st.caption("An independent research workspace created and owned by NilanjanC.")\n    st.caption("This AI workspace is access-protected.")
+    st.caption("An independent research workspace created and owned by NilanjanC.")
+    st.caption("This AI workspace is access-protected.")
     with st.form("login_form"):
         entered = st.text_input("Access password", type="password")
         submitted = st.form_submit_button("Unlock Cognitive Council", type="primary")
@@ -50,7 +51,7 @@ if not st.session_state.get("authenticated", False):
         else:
             st.error("Incorrect password. Please try again.")
     st.stop()
-st.markdown("""
+st.markdown(f"""
 <style>
 .stApp, [data-testid="stAppViewContainer"], [data-testid="stHeader"] {background:#f7f9fc !important; color:#172033 !important;}
 [data-testid="stSidebar"], [data-testid="stSidebar"] > div {background:#eef2f7 !important;}
