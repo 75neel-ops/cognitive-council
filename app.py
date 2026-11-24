@@ -67,7 +67,7 @@ st.markdown(f"""
 div.stButton > button[kind="primary"] {background:#2457a6; color:white; border:0;}
 </style>
 <div class="hero"><div style="display:flex;align-items:center;gap:16px;"><img src="data:image/svg+xml;base64,{BRAND_ICON_DATA}" width="66" height="66" alt="Cognitive Council icon"><div><h1>COGNITIVE COUNCIL</h1><p>Four independent AI minds. One Chief. A clearer way to think.</p></div></div><p class="owner-line">Created and owned by <strong>NilanjanC</strong></p></div>
-""", unsafe_allow_html=True)
+""".replace("{BRAND_ICON_DATA}", BRAND_ICON_DATA), unsafe_allow_html=True)
 
 st.markdown("### Meet your four AI members")
 cols = st.columns(4)
