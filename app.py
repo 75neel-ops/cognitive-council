@@ -63,16 +63,16 @@ with st.sidebar:
     for i, agent in enumerate(AGENTS, 1):
         with st.expander(f"{i}. {agent['name']}", expanded=(i == 1)):
             provider, model = get_model_settings(agent["id"])
-            provider = st.selectbox("Provider", PROVIDERS, index=PROVIDERS.index(provider) if provider in PROVIDERS else 0, key=f"{agent['id']}_provider")
+            provider = st.selectbox("Provider", PROVIDERS, index=PROVIDERS.index(provider) if provider in PROVIDERS else 0, key=f"{agent['id']}_provider_v2")
             models = DEFAULT_MODELS[provider]
-            model = st.selectbox("Model", models, index=models.index(model) if model in models else 0, key=f"{agent['id']}_model")
+            model = st.selectbox("Model", models, index=models.index(model) if model in models else 0, key=f"{agent['id']}_model_v2")
             agent_settings.append({**agent, "provider": provider, "model": model, "instructions": agent["focus"]})
     st.divider()
     st.subheader("Chief AI")
     cp, cm = get_model_settings("chief", "openai", "gpt-4o")
-    cp = st.selectbox("Chief provider", PROVIDERS, index=PROVIDERS.index(cp) if cp in PROVIDERS else 0, key="chief_provider")
+    cp = st.selectbox("Chief provider", PROVIDERS, index=PROVIDERS.index(cp) if cp in PROVIDERS else 0, key="chief_provider_v2")
     cm_options = DEFAULT_MODELS[cp]
-    cm = st.selectbox("Chief model", cm_options, index=cm_options.index(cm) if cm in cm_options else 0, key="chief_model")
+    cm = st.selectbox("Chief model", cm_options, index=cm_options.index(cm) if cm in cm_options else 0, key="chief_model_v2")
     chief_settings = {"provider": cp, "model": cm}
 
 st.subheader("Ask the Council")
