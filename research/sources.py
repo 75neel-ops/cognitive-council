@@ -206,3 +206,37 @@ def search_research(query: str, years_back: int = 3, per_source: int = 5) -> dic
             unique.append(item)
     unique.sort(key=lambda x: (x.get("date", ""), x.get("source") == "GDELT News"), reverse=True)
     return {"query": query, "from_date": from_date, "results": unique, "errors": errors}
+
+
+def search_research_many(queries: list[str], years_back: int = 3, per_source: int = 3) -> dict:
+    """Run an approved set of search queries and merge duplicate discovery records."""
+    cleaned = []
+    for query in queries:
+        value = re.sub(r"\\s+", " ", str(query)).strip()
+        if value and value.lower() not in {q.lower() for q in cleaned}:
+            cleaned.append(value)
+    if not cleaned:
+        raise ValueError("Add at least one research search query.")
+    merged, errors = [], []
+    for query in cleaned[:6]:
+        batch = search_research(query, years_back=years_back, per_source=per_source)
+        merged.extend(batch.get("results", []))
+        errors.extend(batch.get("errors", []))
+    seen, unique = set(), []
+    for item in merged:
+        key = (item.get("doi") or item.get("url") or item.get("title", "").lower()).lower()
+        if key and key not in seen:
+            seen.add(key)
+            item["matched_queries"] = [
+                q for q in cleaned
+                if q.lower() in (item.get("title", "") + " " + item.get("abstract", "")).lower()
+            ][:3]
+            unique.append(item)
+    unique.sort(key=lambda x: (x.get("date", ""), x.get("source") == "GDELT News"), reverse=True)
+    return {
+        "query": " | ".join(cleaned),
+        "queries": cleaned,
+        "from_date": (date.today() - timedelta(days=365 * years_back)).isoformat(),
+        "results": unique[:35],
+        "errors": list(dict.fromkeys(errors)),
+    }
