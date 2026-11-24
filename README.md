@@ -3,6 +3,8 @@
 A browser-based multi-agent AI research and debate workspace.
 
 ## Research workspace
+
+The AI Research Query Builder turns an ordinary-language question into 4–6 focused academic search queries. Researchers can review, edit, add, or remove the suggested queries before searching. If the query box is left blank, the app generates a plan automatically when the Council is convened. Query generation uses the selected Chief AI provider/model and therefore consumes an additional model API call.
 When enabled, each Council session searches public discovery services for recent material:
 - OpenAlex: scholarly works, authors, venues, abstracts when indexed, citation counts and open-access locations.
 - Crossref: DOI and publication metadata deposited by publishers and registrants.
@@ -19,6 +21,7 @@ Important: this is a discovery and synthesis aid, not a systematic-review platfo
 - One Chief AI that synthesizes the panel's work.
 - Basic mode: independent responses followed by a synthesis.
 - Advanced mode: independent responses, peer critique, revised positions, and a final synthesis.
+- AI Research Query Builder with editable, multi-query search plans.
 - Optional live research retrieval before analysis.
 - Downloadable Markdown session report.
 
