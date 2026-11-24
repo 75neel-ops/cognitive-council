@@ -2,7 +2,8 @@
 import streamlit as st
 from config import AGENTS, PROVIDERS, DEFAULT_MODELS, get_model_settings, get_secret
 from services.council_engine import run_council
-from research.sources import search_research
+from research.sources import search_research_many
+from services.query_builder import build_research_queries
 
 st.set_page_config(page_title="Cognitive Council", page_icon="🧠", layout="wide")
 
@@ -77,13 +78,46 @@ with st.sidebar:
     chief_settings = {"provider": cp, "model": cm}
 
 st.subheader("Ask the Council")
-question = st.text_area("Your question", placeholder="What would you like the four AI members to examine?", height=125)
-research_query = st.text_input("Research topic / keywords", placeholder="e.g. adolescent anxiety, gut microbiome and depression, AI alignment")
+question = st.text_area("Your research question", placeholder="Ask naturally: Why do people become more aggressive when they are hungry?", height=125)
 research_enabled = st.checkbox("Search recent research papers and news before analysis", value=True,
-    help="Retrieves discovery records from OpenAlex, Crossref, PubMed, arXiv and GDELT News. News is context, not scientific evidence.")
+    help="Searches OpenAlex, Crossref, PubMed, arXiv and GDELT News. News is context, not scientific evidence.")
 years_back = st.selectbox("Publication window", [1, 3, 5, 10], index=1, disabled=not research_enabled,
     help="Scholarly search window. News search focuses on the latest 30 days.")
-st.caption("Tip: Ask a focused question. Advanced mode uses additional model calls and may cost more. Live source retrieval may be subject to public API rate limits.")
+
+if "research_queries_text" not in st.session_state:
+    st.session_state["research_queries_text"] = ""
+if "research_query_plan" not in st.session_state:
+    st.session_state["research_query_plan"] = None
+
+if research_enabled:
+    st.markdown("#### AI Research Query Builder")
+    st.caption("You do not need to know academic keywords. Ask your question in ordinary language; AI will suggest focused database searches for you to review.")
+    suggest = st.button("✨ Suggest research search queries", disabled=not question.strip())
+    if suggest:
+        try:
+            with st.spinner("Turning your question into academic search queries..."):
+                plan = build_research_queries(question, chief_settings["provider"], chief_settings["model"])
+            st.session_state["research_query_plan"] = plan
+            st.session_state["research_queries_text"] = "\n".join(plan["queries"])
+            st.success("Search suggestions are ready. Review or edit them before convening the Council.")
+        except Exception as exc:
+            st.error(f"Could not generate search suggestions: {exc}")
+
+    plan = st.session_state.get("research_query_plan")
+    if plan and plan.get("concepts"):
+        st.caption("Key concepts identified: " + " · ".join(plan["concepts"]))
+    if plan and plan.get("search_note"):
+        st.caption(plan["search_note"])
+    research_queries_text = st.text_area(
+        "Research searches (one per line — edit, add or remove any)",
+        key="research_queries_text", height=145,
+        placeholder="Click ‘Suggest research search queries’, or enter your own search terms, one per line."
+    )
+    st.caption("The Council will search each line separately and combine duplicate records. If you leave this blank, it will generate a search plan automatically when you convene the Council.")
+else:
+    research_queries_text = ""
+
+st.caption("Tip: Ask a focused question. Basic mode is less expensive; Advanced adds peer review and additional model calls. Query generation and research retrieval also use external services.")
 run = st.button("Convene the Council", type="primary", use_container_width=True, disabled=not question.strip())
 
 if run:
@@ -93,8 +127,14 @@ if run:
             research_data = {"results": [], "errors": []}
             research_context = ""
             if research_enabled:
-                progress.progress(0.05, text="Searching scholarly indexes and recent news...")
-                research_data = search_research((research_query.strip() or question.strip()), years_back=years_back, per_source=5)
+                approved_queries = [line.strip() for line in research_queries_text.splitlines() if line.strip()]
+                if not approved_queries:
+                    progress.progress(0.03, text="Generating academic search queries...")
+                    plan = build_research_queries(question, chief_settings["provider"], chief_settings["model"])
+                    approved_queries = plan["queries"]
+                    st.info("The AI generated these research searches automatically: " + " · ".join(approved_queries))
+                progress.progress(0.05, text=f"Searching scholarly indexes with {len(approved_queries)} queries...")
+                research_data = search_research_many(approved_queries, years_back=years_back, per_source=3)
                 source_lines = []
                 for idx, item in enumerate(research_data["results"], 1):
                     item["ref"] = f"R{idx}"
@@ -110,7 +150,7 @@ if run:
             st.success("The Council has completed its session.")
             if research_enabled:
                 st.markdown("## Live research desk")
-                st.caption(f"Search window: from {research_data.get('from_date', 'recent')}. Records are discovery leads; verify publication status and methods before citing.")
+                st.caption(f"Search window: from {research_data.get('from_date', 'recent')}. Queries used: {' | '.join(research_data.get('queries', []))}. Records are discovery leads; verify publication status and methods before citing.")
                 if research_data.get("errors"):
                     with st.expander("Some sources could not be reached"):
                         for err in research_data["errors"]:
